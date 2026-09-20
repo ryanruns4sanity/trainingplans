@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sub-4:00 Marathon & Strength Hub (Houston 2027)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script type="module">
+        import FitParser from 'https://cdn.jsdelivr.net/npm/fit-parser@1.9.0/+esm';
+        window.FitParser = FitParser;
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom scrollbar for a premium feel */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-full flex flex-col overflow-x-hidden selection:bg-indigo-500/30">
+
+    <!-- Top Navigation Bar -->
+    <header class="glass-panel sticky top-0 z-50 border-b border-slate-800 py-4 px-6 flex flex-wrap items-center justify-between shadow-2xl">
+        <div class="flex items-center space-x-4">
+            <div class="bg-gradient-to-br from-indigo-500 to-violet-600 p-2.5 rounded-xl text-white font-bold shadow-lg shadow-indigo-500/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Sub-4:00 Marathon Hub</h1>
+                <p class="text-xs text-indigo-400 font-medium">Houston (Jan 17, 2027) & Eugene (Apr 25, 2027)</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+            <div class="bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-700/50 flex items-center space-x-3">
+                <div class="flex flex-col">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Total Progress</span>
+                    <div class="w-24 h-1.5 bg-slate-800 rounded-full mt-1 overflow-hidden">
+                        <div id="overall-progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <span id="overall-progress-text" class="text-sm font-bold text-white">0%</span>
+            </div>
+            
+            <label class="group bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs px-3 py-2 rounded-xl transition-all font-medium flex items-center space-x-1 cursor-pointer shadow-lg shadow-indigo-500/10">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                <span class="hidden sm:inline">Sync FIT</span>
+                <input type="file" id="fit-upload" accept=".fit" class="hidden" onchange="handleFitUpload(event)" />
+            </label>
+
+            <button onclick="resetProgress()" class="group bg-slate-800 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/30 text-xs px-3 py-2 rounded-xl transition-all font-medium flex items-center space-x-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span class="hidden sm:inline">Reset</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto w-full grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8">
+
+        <!-- Left Column: Athlete Profile & Stats (xl: 4 cols) -->
+        <div class="xl:col-span-4 space-y-6">
+            
+            <!-- Athlete Profile Card -->
+            <div class="glass-panel rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-indigo-500/10 blur-2xl"></div>
+                
+                <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center justify-between">
+                    <span>Athlete Dashboard</span>
+                    <span class="px-2 py-1 rounded-md bg-indigo-500/10 text-indigo-400 text-[10px]">Fit Age: 44.5</span>
+                </h2>
+                <div class="grid grid-cols-2 gap-3 text-xs mb-5">
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                        <span class="text-slate-400 block mb-1">Resting HR</span>
+                        <span class="text-white font-bold text-base">50 <span class="text-[10px] text-slate-500 font-normal">bpm</span></span>
+                    </div>
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                        <span class="text-slate-400 block mb-1">VO2 Max</span>
+                        <span class="text-emerald-400 font-bold text-base">45 <span class="text-[10px] text-emerald-500/50 font-normal">mL/kg/min</span></span>
+                    </div>
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 col-span-2">
+                        <span class="text-slate-400 block mb-1">Target Pace (Houston)</span>
+                        <div class="flex items-end justify-between">
+                            <span class="text-indigo-400 font-bold text-lg">9:09 <span class="text-[10px] text-indigo-500/50 font-normal">/mi</span></span>
+                            <span class="text-slate-500 font-medium">Goal: &lt; 4:00:00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700/50 p-4 rounded-xl text-sm">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-slate-300">Today's Date:</span>
+                        <span id="today-date-display" class="font-bold text-white">--</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-300">Days to Houston:</span>
+                        <span id="days-to-race" class="font-bold text-amber-400">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Program Stats Card -->
+            <div class="glass-panel rounded-2xl p-6 shadow-xl">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Training Metrics</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-wider text-slate-500 block">Total Miles</span>
+                        <span id="stat-total-miles" class="text-2xl font-extrabold text-white mt-1 block">--</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase tracking-wider text-slate-500 block">Logged Miles</span>
+                        <span id="stat-completed-miles" class="text-2xl font-extrabold text-emerald-400 mt-1 block">0.0</span>
+                    </div>
+                    <div class="col-span-2 bg-slate-900/50 p-3 rounded-xl border border-slate-800 mt-2">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="text-[10px] uppercase tracking-wider text-slate-400">Workouts Completed</span>
+                            <span id="stat-completed-workouts" class="text-xs font-bold text-indigo-400">0 / 0</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="workout-progress-bar" class="h-full bg-indigo-500 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mileage Chart -->
+            <div class="glass-panel rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">Volume Ramp</h2>
+                    <span class="text-[10px] text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-md">Max: 42 mpw</span>
+                </div>
+                <div class="relative h-48 w-full">
+                    <canvas id="mileageChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Schedule & Roadmap (xl: 8 cols) -->
+        <div class="xl:col-span-8 space-y-6">
+
+            <!-- Week Navigation -->
+            <div class="glass-panel rounded-2xl p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-4 w-full sm:w-auto">
+                    <button onclick="changeWeek(-1)" class="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition border border-slate-700 hover:border-slate-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <div class="text-center sm:text-left flex-1 sm:flex-none">
+                        <h2 id="current-week-title" class="text-lg font-bold text-white leading-tight">Week 1</h2>
+                        <p id="current-week-dates" class="text-xs text-indigo-400 font-medium mt-0.5">Sep 14 - Sep 20, 2026</p>
+                    </div>
+                    <button onclick="changeWeek(1)" class="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition border border-slate-700 hover:border-slate-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+                
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <button onclick="jumpToCurrentWeek()" class="hidden sm:block px-3 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs rounded-xl transition font-medium whitespace-nowrap">
+                        Jump to Today
+                    </button>
+                    <div class="w-full sm:w-64 relative">
+                        <select id="week-dropdown" onchange="selectWeek(this.value)" class="w-full bg-slate-900 appearance-none border border-slate-700 text-slate-200 rounded-xl pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-inner">
+                            <!-- Populated by JS -->
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Workout List -->
+            <div class="glass-panel rounded-2xl p-6 shadow-xl">
+                <div class="flex flex-wrap items-end justify-between pb-5 mb-5 border-b border-slate-800 gap-4">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-1">
+                            <span id="week-phase-badge" class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">Phase Name</span>
+                            <span id="week-miles-badge" class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-slate-800 text-slate-300 border border-slate-700">0 Miles Planned</span>
+                        </div>
+                        <h3 id="week-focus-text" class="text-sm text-slate-300 mt-2 font-medium">Focus: Gentle Recovery</h3>
+                    </div>
+                    
+                    <!-- This Week's Progress -->
+                    <div class="w-full sm:w-48 bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="text-[10px] uppercase tracking-wider text-slate-400">This Week</span>
+                            <span id="current-week-progress-text" class="text-xs font-bold text-white">0%</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="current-week-progress-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="daily-workouts-container" class="space-y-3">
+                    <!-- Dynamic daily workout cards inserted here -->
+                </div>
+            </div>
+
+            <!-- Roadmap Accordion / Table -->
+            <div class="glass-panel rounded-2xl p-6 shadow-xl">
+                <h3 class="text-sm font-bold text-white mb-4">Program Roadmap (32 Weeks)</h3>
+                <div class="overflow-x-auto rounded-xl border border-slate-800 max-h-[400px]">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider sticky top-0 border-b border-slate-800 z-10">
+                            <tr>
+                                <th class="p-4 font-semibold">Wk / Dates</th>
+                                <th class="p-4 font-semibold">Phase</th>
+                                <th class="p-4 font-semibold text-center">Miles</th>
+                                <th class="p-4 font-semibold hidden sm:table-cell">Key Focus</th>
+                                <th class="p-4 font-semibold text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="master-roadmap-tbody" class="divide-y divide-slate-800/60 bg-slate-900/20">
+                            <!-- Roadmap rows inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        // ---------------------------------------------------------
+        // 1. DATA DEFINITION (32 Weeks - Houston + Eugene)
+        // ---------------------------------------------------------
+        // Core structure kept intact, omitting some repetitive object keys for brevity in mapping below.
+        const basePlan = [
+            // Weeks 1-18: Houston Build
+            { phase: "Post-Flu Ramp", miles: 15, focus: "Gentle Reintroduction (Post-Flu Recovery)",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min easy pool swimming (Zone 1/2 HR)"}, {t:"Easy Run", m:3, d:"3 miles easy recovery run (HR < 135 bpm)"}, {t:"Strength & Gym", m:0, d:"60 min full-body strength: core, squats, upper"}, {t:"Easy Run", m:4, d:"4 miles easy aerobic base"}, {t:"Full Rest", m:0, d:"Complete rest & recovery"}, {t:"Long Run", m:5, d:"5 miles steady slow long run"}, {t:"Recovery Run", m:3, d:"3 miles easy recovery jog"} ] },
+            { phase: "Post-Flu Ramp", miles: 18, focus: "Rebuilding Base & Lung Capacity",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"50 min moderate pool laps"}, {t:"Easy Run", m:4, d:"4 miles easy conversational pace"}, {t:"Strength & Gym", m:0, d:"Lower body functional compound movements"}, {t:"Easy Run", m:4, d:"4 miles easy + 4 x 20s gentle strides"}, {t:"Full Rest", m:0, d:"Complete rest & mobility"}, {t:"Long Run", m:6, d:"6 miles relaxed long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Base Rebuild", miles: 22, focus: "Stabilizing Aerobic Volume & First Track Session",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min interval swim session"}, {t:"Track Intervals", m:5, d:"5m total: Warmup + 4x400m track repeats @ 8:00 pace + cool"}, {t:"Strength & Gym", m:0, d:"Full body resistance training"}, {t:"Hill Session", m:5, d:"5m total: 4x30s light hill repeats"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:8, d:"8 miles steady long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Recovery Week", miles: 16, focus: "Absorption & Flu Remnant Recovery",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"30 min easy pool swim"}, {t:"Easy Run", m:4, d:"4 miles easy aerobic"}, {t:"Strength & Gym", m:0, d:"Light mobility and core strength"}, {t:"Easy Run", m:4, d:"4 miles easy with strides"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:5, d:"5 miles relaxed"}, {t:"Recovery Run", m:3, d:"3 miles easy"} ] },
+            { phase: "Aerobic Base Build", miles: 25, focus: "Establishing Endurance Baseline",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min aqua fitness"}, {t:"Track Intervals", m:6, d:"6m total: Warmup + 5x400m @ 7:55 pace"}, {t:"Strength & Gym", m:0, d:"Gym lower body strength session"}, {t:"Hill Session", m:6, d:"6m total: 6x45s controlled hills"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:10, d:"10 miles steady aerobic long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Aerobic Base Build", miles: 28, focus: "Volume Progression & Tempo Intro",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"50 min pool workout"}, {t:"Tempo Run", m:6, d:"6m total: Warmup + 2m @ 8:25 tempo + cool"}, {t:"Strength & Gym", m:0, d:"Upper & core functional strength"}, {t:"Easy Run", m:6, d:"6 miles easy aerobic"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:12, d:"12 miles long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Aerobic Base Build", miles: 31, focus: "Consolidating Distance & Track Speed",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min cross-train swim"}, {t:"Track Intervals", m:7, d:"7m total: Warmup + 6x400m @ 7:50 pace"}, {t:"Strength & Gym", m:0, d:"Gym leg strength & stability"}, {t:"Hill Session", m:7, d:"7m total: 8x45s hills"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:14, d:"14 miles long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Recovery Week", miles: 22, focus: "Mid-Cycle Recovery",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"30 min easy swim"}, {t:"Easy Run", m:4, d:"4 miles easy"}, {t:"Strength & Gym", m:0, d:"Light mobility and core"}, {t:"Easy Run", m:5, d:"5 miles easy with strides"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:9, d:"9 miles relaxed long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Sub-4:00 Build Phase", miles: 34, focus: "Marathon Tempo Integration",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min pool endurance session"}, {t:"Tempo Run", m:8, d:"8m total: Warmup + 3m @ 8:25 tempo + cool"}, {t:"Strength & Gym", m:0, d:"Gym strength maintenance"}, {t:"Easy Run", m:7, d:"7 miles easy aerobic"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:15, d:"15 miles steady long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Sub-4:00 Build Phase", miles: 37, focus: "Stamina & Race Pace Practice",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min pool swim"}, {t:"Tempo Run", m:8, d:"8m total: Warmup + 4m @ 8:25 tempo"}, {t:"Strength & Gym", m:0, d:"Full body gym strength"}, {t:"Easy Run", m:7, d:"7 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:18, d:"18 miles with 3 miles at MP (9:09/mi)"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Sub-4:00 Build Phase", miles: 40, focus: "Peak Weekly Volume Target & Track Speed",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"50 min pool session"}, {t:"Track Intervals", m:9, d:"9m total: 5x800m track repeats @ 8:05 pace"}, {t:"Strength & Gym", m:0, d:"Gym strength maintenance"}, {t:"Easy Run", m:8, d:"8 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:19, d:"19 miles long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Recovery Week", miles: 26, focus: "Super-Compensation Recovery",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"30 min easy swim"}, {t:"Easy Run", m:5, d:"5 miles easy"}, {t:"Strength & Gym", m:0, d:"Light mobility & core"}, {t:"Easy Run", m:6, d:"6 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:11, d:"11 miles relaxed long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Peak Prep & Sharpening", miles: 38, focus: "Marathon Goal Pace Integration",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min pool swim"}, {t:"Tempo Run", m:9, d:"9m total: Warmup + 5m @ 8:25 tempo"}, {t:"Strength & Gym", m:0, d:"Gym strength maintenance"}, {t:"Easy Run", m:7, d:"7 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:18, d:"18 miles with 6 miles at MP (9:09/mi)"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Peak Prep & Sharpening", miles: 42, focus: "Peak Simulation (Houston Prep)",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min pool endurance"}, {t:"Tempo Run", m:9, d:"9m total: 5m @ 8:25 tempo"}, {t:"Strength & Gym", m:0, d:"Light gym strength"}, {t:"Easy Run", m:8, d:"8 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:20, d:"20m peak sim with 8m at MP (9:09/mi)"}, {t:"Recovery Run", m:5, d:"5 miles easy"} ] },
+            { phase: "Taper Week 1", miles: 30, focus: "Taper Initiation (-25% Volume)",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"30 min easy swim"}, {t:"Tempo Run", m:7, d:"7m total with 3m MP"}, {t:"Strength & Gym", m:0, d:"Light mobility and core"}, {t:"Easy Run", m:6, d:"6 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:13, d:"13 miles easy long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Taper Week 2", miles: 22, focus: "Deep Taper (-50% Volume)",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"30 min pool relaxation"}, {t:"Tempo Run", m:5, d:"5m total with 2m MP"}, {t:"Strength & Gym", m:0, d:"Mobility & core only"}, {t:"Easy Run", m:5, d:"5 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Long Run", m:8, d:"8 miles relaxed long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Race Week Taper", miles: 12, focus: "Freshness & Carb Loading (Houston)",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"20 min easy pool soak or rest"}, {t:"Easy Run", m:3, d:"3 miles easy with strides"}, {t:"Rest", m:0, d:"Complete rest & mobility"}, {t:"Easy Run", m:3, d:"3 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest day / pre-race prep"}, {t:"Shakeout", m:2, d:"2 miles easy shakeout + strides"}, {t:"Easy Run", m:4, d:"4 miles easy shakeout"} ] },
+            { phase: "Houston Race Week!", miles: 30.2, focus: "HOUSTON MARATHON (< 4:00 Goal) & Recovery",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"Post-race hot tub soak"}, {t:"Rest", m:0, d:"Complete rest"}, {t:"Rest", m:0, d:"Light walking"}, {t:"Rest", m:0, d:"Rest day"}, {t:"Full Rest", m:0, d:"Complete rest day"}, {t:"Easy Run", m:2, d:"2 miles gentle walk/jog"}, {t:"HOUSTON MARATHON", m:26.2, d:"26.2 Miles - SUB-4:00 TARGET! 🏅"} ] },
+            
+            // Weeks 19-32: Eugene Build
+            { phase: "Post-Houston Recovery", miles: 12, focus: "Gentle Active Recovery",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"30 min easy aqua jogging"}, {t:"Easy Run", m:3, d:"3 miles very easy recovery jog"}, {t:"Strength & Gym", m:0, d:"Light mobility & stretching"}, {t:"Easy Run", m:3, d:"3 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:4, d:"4 miles easy testing legs"}, {t:"Recovery Run", m:2, d:"2 miles easy"} ] },
+            { phase: "Eugene Spring Base", miles: 18, focus: "Re-establishing Aerobic Foundation",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min swim session"}, {t:"Easy Run", m:4, d:"4 miles easy"}, {t:"Strength & Gym", m:0, d:"Full body strength training"}, {t:"Easy Run", m:4, d:"4 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:6, d:"6 miles easy long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Eugene Spring Base", miles: 22, focus: "Building Spring Mileage",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min aqua jog"}, {t:"Track Intervals", m:5, d:"5m total: 4 x 400m speed"}, {t:"Strength & Gym", m:0, d:"Gym strength maintenance"}, {t:"Hill Session", m:5, d:"5m total: 4 x hills"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:8, d:"8 miles relaxed long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Eugene Spring Base", miles: 26, focus: "Aerobic Capacity Expansion",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min swim"}, {t:"Tempo Run", m:6, d:"6m total with 2m tempo"}, {t:"Strength & Gym", m:0, d:"Lower body strength"}, {t:"Easy Run", m:6, d:"6 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:10, d:"10 miles long run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Eugene Build", miles: 30, focus: "Mid-Spring Volume Ramp",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min aqua fitness"}, {t:"Track Intervals", m:7, d:"7m total: 5 x 400m speed"}, {t:"Strength & Gym", m:0, d:"Full body strength"}, {t:"Hill Session", m:6, d:"6m total with hill repeats"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:12, d:"12 miles long run"}, {t:"Recovery Run", m:5, d:"5 miles easy"} ] },
+            { phase: "Recovery Week", miles: 22, focus: "Spring Recovery Week",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"30 min easy swim"}, {t:"Easy Run", m:4, d:"4 miles easy"}, {t:"Strength & Gym", m:0, d:"Mobility & core"}, {t:"Easy Run", m:5, d:"5 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:9, d:"9 miles relaxed"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Eugene Build", miles: 34, focus: "Fun & Healthy Distance Builder",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min pool endurance"}, {t:"Tempo Run", m:8, d:"8m total with 3m tempo"}, {t:"Strength & Gym", m:0, d:"Gym maintenance"}, {t:"Easy Run", m:7, d:"7 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:15, d:"15 miles steady"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Eugene Build", miles: 38, focus: "Cruising Toward Eugene",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"45 min swim"}, {t:"Track Intervals", m:8, d:"8m total: 6 x 400m speed"}, {t:"Strength & Gym", m:0, d:"Full body strength"}, {t:"Easy Run", m:8, d:"8 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:18, d:"18 miles scenic run"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Eugene Peak Build", miles: 40, focus: "Peak Spring Mileage (Healthy Finish)",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"50 min pool session"}, {t:"Tempo Run", m:9, d:"9m total with 4m tempo"}, {t:"Strength & Gym", m:0, d:"Gym maintenance"}, {t:"Easy Run", m:8, d:"8 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:20, d:"20 miles peak run (comfortable)"}, {t:"Recovery Run", m:3, d:"3 miles easy"} ] },
+            { phase: "Recovery Week", miles: 26, focus: "Taper Prep Recovery",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"30 min easy swim"}, {t:"Easy Run", m:5, d:"5 miles easy"}, {t:"Strength & Gym", m:0, d:"Mobility & core"}, {t:"Easy Run", m:6, d:"6 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:11, d:"11 miles relaxed"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Eugene Taper 1", miles: 30, focus: "Eugene Taper Initiation",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"30 min swim"}, {t:"Tempo Run", m:7, d:"7m total with 2m tempo"}, {t:"Strength & Gym", m:0, d:"Light core strength"}, {t:"Easy Run", m:6, d:"6 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:13, d:"13 miles easy"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Eugene Taper 2", miles: 22, focus: "Deep Taper for Eugene",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"30 min pool relaxation"}, {t:"Easy Run", m:5, d:"5 miles easy"}, {t:"Strength & Gym", m:0, d:"Mobility only"}, {t:"Easy Run", m:5, d:"5 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Long Run", m:8, d:"8 miles relaxed"}, {t:"Recovery Run", m:4, d:"4 miles easy"} ] },
+            { phase: "Eugene Race Week", miles: 12, focus: "Freshness & Travel Prep",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"20 min easy pool soak"}, {t:"Easy Run", m:3, d:"3 miles easy with strides"}, {t:"Rest", m:0, d:"Complete rest & mobility"}, {t:"Easy Run", m:3, d:"3 miles easy"}, {t:"Full Rest", m:0, d:"Complete rest / travel prep"}, {t:"Shakeout", m:2, d:"2 miles shakeout + strides"}, {t:"Easy Run", m:4, d:"4 miles easy shakeout"} ] },
+            { phase: "Eugene Race Week!", miles: 28.2, focus: "EUGENE MARATHON (Fun Finish!) 🎉",
+              wks: [ {t:"Pool Cross-Train", m:0, d:"Post-race celebration soak"}, {t:"Rest", m:0, d:"Complete rest"}, {t:"Rest", m:0, d:"Light walking"}, {t:"Rest", m:0, d:"Rest day"}, {t:"Full Rest", m:0, d:"Complete rest"}, {t:"Easy Run", m:2, d:"2 miles gentle walk/jog"}, {t:"EUGENE MARATHON", m:26.2, d:"26.2 Miles - FUN & HEALTHY FINISH! 🌸🏅"} ] }
+        ];
+
+        // ---------------------------------------------------------
+        // 2. CALENDAR DATE LOGIC (Houston = Jan 17, 2027)
+        // ---------------------------------------------------------
+        // Jan 17, 2027 is a Sunday (Day 7 of Week 18).
+        // Week 18 Starts Monday Jan 11, 2027.
+        // 17 weeks before that is Sept 14, 2026.
+        const START_DATE = new Date(2026, 8, 14); // Months are 0-indexed. 8 = Sept. Sept 14, 2026 (Monday).
+        const HOUSTON_RACE_DATE = new Date(2027, 0, 17); // Jan 17, 2027
+        const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        let trainingPlan = [];
+        let currentWeekIndex = 0;
+        let todayRealDate = new Date(); // Gets actual system time
+        let realCurrentWeekIndex = 0;
+        let userProgress = JSON.parse(localStorage.getItem('marathon_progress_v2')) || {};
+        let mileageChartInstance = null;
+
+        // Build the rich training plan array with real dates attached
+        function initializePlanData() {
+            let runningDate = new Date(START_DATE);
+            
+            basePlan.forEach((w, wIdx) => {
+                let weekStartDate = new Date(runningDate);
+                let weekWorkouts = [];
+                
+                w.wks.forEach((wk, dIdx) => {
+                    let workoutDate = new Date(runningDate);
+                    
+                    // Categorize workout type for styling
+                    let isRun = wk.m > 0 || wk.t.includes("Run") || wk.t.includes("Intervals") || wk.t.includes("Hill") || wk.t.includes("Shakeout");
+                    let isPool = wk.t.includes("Pool");
+                    let isGym = wk.t.includes("Strength");
+                    
+                    weekWorkouts.push({
+                        dateObj: workoutDate,
+                        dayName: DAY_NAMES[dIdx],
+                        dateStr: `${MONTH_NAMES[workoutDate.getMonth()]} ${workoutDate.getDate()}`,
+                        type: wk.t,
+                        detail: wk.d,
+                        miles: wk.m,
+                        run: isRun,
+                        pool: isPool,
+                        strength: isGym
+                    });
+                    
+                    // Add 1 day
+                    runningDate.setDate(runningDate.getDate() + 1);
+                });
+                
+                let weekEndDate = new Date(runningDate);
+                weekEndDate.setDate(weekEndDate.getDate() - 1); // Last day of week
+
+                trainingPlan.push({
+                    weekNum: wIdx + 1,
+                    phase: w.phase,
+                    miles: w.miles,
+                    focus: w.focus,
+                    startDateObj: weekStartDate,
+                    endDateObj: weekEndDate,
+                    dateRangeStr: `${MONTH_NAMES[weekStartDate.getMonth()]} ${weekStartDate.getDate()} - ${MONTH_NAMES[weekEndDate.getMonth()]} ${weekEndDate.getDate()}, ${weekEndDate.getFullYear()}`,
+                    workouts: weekWorkouts
+                });
+            });
+        }
+
+        // ---------------------------------------------------------
+        // 3. INITIALIZATION & RENDER
+        // ---------------------------------------------------------
+        window.onload = function() {
+            initializePlanData();
+            calculateCurrentRealWeek();
+            currentWeekIndex = realCurrentWeekIndex; // Default load to today's real week
+            
+            updateHeaderDates();
+            populateWeekDropdown();
+            renderWeekSelector();
+            renderDailyWorkouts();
+            updateStats();
+            initChart();
+            renderRoadmap();
+        };
+
+        function calculateCurrentRealWeek() {
+            // Find which week 'todayRealDate' falls into
+            let found = false;
+            for(let i=0; i<trainingPlan.length; i++) {
+                let w = trainingPlan[i];
+                // Set to start of day / end of day for precise check
+                let s = new Date(w.startDateObj).setHours(0,0,0,0);
+                let e = new Date(w.endDateObj).setHours(23,59,59,999);
+                let t = todayRealDate.getTime();
+                
+                if (t >= s && t <= e) {
+                    realCurrentWeekIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                // If today is before plan starts, set to week 0. If after, set to last week.
+                if(todayRealDate < START_DATE) realCurrentWeekIndex = 0;
+                else realCurrentWeekIndex = trainingPlan.length - 1;
+            }
+        }
+
+        function updateHeaderDates() {
+            document.getElementById('today-date-display').textContent = `${DAY_NAMES[(todayRealDate.getDay()+6)%7]}, ${MONTH_NAMES[todayRealDate.getMonth()]} ${todayRealDate.getDate()}, ${todayRealDate.getFullYear()}`;
+            
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const daysLeft = Math.ceil((HOUSTON_RACE_DATE - todayRealDate) / msPerDay);
+            
+            const daysEl = document.getElementById('days-to-race');
+            if (daysLeft > 0) {
+                daysEl.textContent = `${daysLeft} Days`;
+            } else if (daysLeft === 0) {
+                daysEl.textContent = "RACE DAY!";
+                daysEl.classList.add('animate-pulse', 'text-rose-400');
+            } else {
+                daysEl.textContent = "Completed";
+                daysEl.className = "font-bold text-slate-500";
+            }
+        }
+
+        function populateWeekDropdown() {
+            const dropdown = document.getElementById('week-dropdown');
+            dropdown.innerHTML = '';
+            trainingPlan.forEach((w, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                // Add marker for current week
+                let prefix = (index === realCurrentWeekIndex) ? "📍 " : "";
+                opt.textContent = `${prefix}Week ${w.weekNum} (${w.startDateObj.getMonth()+1}/${w.startDateObj.getDate()}): ${w.phase}`;
+                dropdown.appendChild(opt);
+            });
+            dropdown.value = currentWeekIndex;
+        }
+
+        function selectWeek(index) {
+            currentWeekIndex = parseInt(index);
+            document.getElementById('week-dropdown').value = currentWeekIndex;
+            renderDailyWorkouts();
+            renderWeekSelector();
+        }
+
+        function changeWeek(direction) {
+            currentWeekIndex += direction;
+            if (currentWeekIndex < 0) currentWeekIndex = 0;
+            if (currentWeekIndex >= trainingPlan.length) currentWeekIndex = trainingPlan.length - 1;
+            document.getElementById('week-dropdown').value = currentWeekIndex;
+            renderDailyWorkouts();
+            renderWeekSelector();
+        }
+        
+        function jumpToCurrentWeek() {
+            selectWeek(realCurrentWeekIndex);
+        }
+
+        function renderWeekSelector() {
+            const w = trainingPlan[currentWeekIndex];
+            document.getElementById('current-week-title').textContent = `Week ${w.weekNum}`;
+            document.getElementById('current-week-dates').textContent = w.dateRangeStr;
+            document.getElementById('week-phase-badge').textContent = w.phase;
+            document.getElementById('week-miles-badge').textContent = `${w.miles} Miles Planned`;
+            document.getElementById('week-focus-text').textContent = `Focus: ${w.focus}`;
+            
+            // Highlight table row
+            const rows = document.querySelectorAll('#master-roadmap-tbody tr');
+            rows.forEach((r, idx) => {
+                if (idx === currentWeekIndex) {
+                    r.classList.add('bg-indigo-900/30', 'border-l-4', 'border-indigo-500');
+                } else {
+                    r.classList.remove('bg-indigo-900/30', 'border-l-4', 'border-indigo-500');
+                }
+            });
+        }
+
+        function renderDailyWorkouts() {
+            const container = document.getElementById('daily-workouts-container');
+            container.innerHTML = '';
+            const w = trainingPlan[currentWeekIndex];
+            
+            let weekCompletedMiles = 0;
+            let weekCompletedCount = 0;
+
+            w.workouts.forEach((wk, dayIndex) => {
+                const key = `w${w.weekNum}_d${dayIndex}`;
+                const isChecked = userProgress[key] || false;
+                
+                if (isChecked) {
+                    weekCompletedMiles += wk.miles;
+                    weekCompletedCount++;
+                }
+
+                // Is this specific day "Today"?
+                const isToday = (
+                    wk.dateObj.getDate() === todayRealDate.getDate() &&
+                    wk.dateObj.getMonth() === todayRealDate.getMonth() &&
+                    wk.dateObj.getFullYear() === todayRealDate.getFullYear()
+                );
+
+                const card = document.createElement('div');
+                
+                // Style logic
+                let baseClasses = "p-4 rounded-xl border transition-all duration-300 flex items-center justify-between gap-4 cursor-pointer hover:shadow-lg group relative overflow-hidden ";
+                
+                if (isChecked) {
+                    baseClasses += "bg-emerald-900/20 border-emerald-500/30 shadow-[inset_0_0_20px_rgba(16,185,129,0.05)]";
+                } else if (isToday) {
+                    baseClasses += "bg-indigo-900/40 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.2)]";
+                } else {
+                    baseClasses += "bg-slate-900/50 border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/80";
+                }
+                
+                card.className = baseClasses;
+                
+                // Make clicking the card toggle the checkbox
+                card.onclick = (e) => {
+                    if(e.target.tagName !== 'INPUT') {
+                        document.getElementById(key).click();
+                    }
+                };
+
+                let badgeHTML = '';
+                if (wk.run && wk.miles > 0) badgeHTML += `<span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-emerald-500/20 shadow-sm">${wk.miles} mi</span>`;
+                if (wk.pool) badgeHTML += `<span class="bg-cyan-500/10 text-cyan-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-cyan-500/20 shadow-sm">Pool</span>`;
+                if (wk.strength) badgeHTML += `<span class="bg-violet-500/10 text-violet-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-violet-500/20 shadow-sm">Gym</span>`;
+                if (!wk.run && !wk.pool && !wk.strength) badgeHTML += `<span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded-full font-bold">Rest</span>`;
+
+                const actualData = userProgress[`${key}_actual`];
+                let actualHtml = '';
+                if (actualData) {
+                    actualHtml = `<div class="mt-2 inline-block bg-slate-950/60 rounded-md px-2 py-1 border border-slate-700/50 shadow-inner">
+                        <span class="text-[9px] uppercase tracking-wide text-slate-500 font-bold mr-1">Garmin Sync:</span>
+                        <span class="text-xs text-indigo-300 font-bold">${actualData.distance} mi</span>
+                        ${actualData.hr ? `<span class="text-[10px] text-rose-400/80 font-bold ml-2">♥️ ${actualData.hr} bpm</span>` : ''}
+                    </div>`;
+                }
+
+                let todayIndicator = isToday && !isChecked ? `<span class="absolute top-0 right-0 bg-indigo-500 text-white text-[9px] font-bold px-2 py-1 rounded-bl-lg">TODAY</span>` : '';
+                let checkBg = isChecked ? 'bg-emerald-500 border-emerald-500' : 'bg-slate-800 border-slate-600 group-hover:border-indigo-400';
+
+                card.innerHTML = `
+                    ${todayIndicator}
+                    <div class="flex items-start space-x-4 flex-1 z-10">
+                        <div class="pt-1">
+                            <input type="checkbox" id="${key}" ${isChecked ? 'checked' : ''} onchange="toggleWorkout(${w.weekNum}, ${dayIndex}, event)" class="sr-only">
+                            <div class="w-6 h-6 rounded-md flex items-center justify-center border-2 transition-colors ${checkBg}">
+                                ${isChecked ? '<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>' : ''}
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 flex-wrap gap-y-1 mb-1">
+                                <span class="font-bold text-sm ${isChecked ? 'text-emerald-50' : (isToday ? 'text-indigo-200' : 'text-white')} w-10">${wk.dayName.substring(0,3)}</span>
+                                <span class="text-[10px] text-slate-400 uppercase font-semibold mr-1">${wk.dateStr}</span>
+                                <span class="text-xs ${isChecked ? 'text-emerald-400' : 'text-indigo-400'} font-semibold">— ${wk.type}</span>
+                                ${badgeHTML}
+                            </div>
+                            <p class="text-xs ${isChecked ? 'text-emerald-100/70' : 'text-slate-400'} pr-4 leading-relaxed">${wk.detail}</p>
+                            ${actualHtml}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            // Update Week Progress Bar
+            let weekPct = Math.round((weekCompletedCount / 7) * 100);
+            document.getElementById('current-week-progress-bar').style.width = `${weekPct}%`;
+            document.getElementById('current-week-progress-text').textContent = `${weekPct}%`;
+        }
+
+        function toggleWorkout(weekNum, dayIndex, event) {
+            if(event) event.stopPropagation(); // prevent double toggle from card click
+            const key = `w${weekNum}_d${dayIndex}`;
+            const checkbox = document.getElementById(key);
+            userProgress[key] = checkbox.checked;
+            localStorage.setItem('marathon_progress_v2', JSON.stringify(userProgress));
+            
+            renderDailyWorkouts();
+            updateStats();
+            renderRoadmap();
+        }
+
+        function updateStats() {
+            let totalPlannedMiles = 0;
+            let completedMiles = 0;
+            let completedWorkouts = 0;
+            let totalWorkouts = 0;
+
+            trainingPlan.forEach((w, wIdx) => {
+                w.workouts.forEach((wk, dIdx) => {
+                    totalWorkouts++;
+                    totalPlannedMiles += wk.miles;
+                    const key = `w${w.weekNum}_d${dIdx}`;
+                    if (userProgress[key]) {
+                        completedWorkouts++;
+                        // If synced data exists, use that for completed miles instead of planned
+                        const actual = userProgress[`${key}_actual`];
+                        if (actual && !isNaN(parseFloat(actual.distance))) {
+                             completedMiles += parseFloat(actual.distance);
+                        } else {
+                             completedMiles += wk.miles;
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('stat-total-miles').textContent = totalPlannedMiles.toFixed(1);
+            document.getElementById('stat-completed-miles').textContent = completedMiles.toFixed(1);
+            document.getElementById('stat-completed-workouts').textContent = `${completedWorkouts} / ${totalWorkouts}`;
+
+            const percent = Math.round((completedWorkouts / totalWorkouts) * 100) || 0;
+            document.getElementById('overall-progress-text').textContent = `${percent}%`;
+            document.getElementById('overall-progress-bar').style.width = `${percent}%`;
+            document.getElementById('workout-progress-bar').style.width = `${percent}%`;
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('mileageChart').getContext('2d');
+            const labels = trainingPlan.map(w => `W${w.weekNum}`);
+            const miles = trainingPlan.map(w => w.miles);
+            
+            // Gradient fill
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+            gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+            mileageChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Planned Mileage',
+                        data: miles,
+                        borderColor: '#818cf8',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#1e1b4b',
+                        pointBorderColor: '#818cf8',
+                        pointBorderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleColor: '#818cf8',
+                            bodyColor: '#e2e8f0',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.raw} miles (${trainingPlan[context.dataIndex].phase})`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748b', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+                            ticks: { color: '#64748b', stepSize: 10 },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRoadmap() {
+            const tbody = document.getElementById('master-roadmap-tbody');
+            tbody.innerHTML = '';
+
+            trainingPlan.forEach((w, index) => {
+                let wkCompletedCount = 0;
+                w.workouts.forEach((wk, dIdx) => {
+                    if (userProgress[`w${w.weekNum}_d${dIdx}`]) wkCompletedCount++;
+                });
+                
+                let isFullyCompleted = wkCompletedCount === 7;
+                let isCurrentWeek = index === realCurrentWeekIndex;
+                let statusBadge = '';
+                
+                if (isFullyCompleted) {
+                    statusBadge = `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">DONE</span>`;
+                } else if (wkCompletedCount > 0) {
+                    statusBadge = `<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[10px] font-bold">${Math.round((wkCompletedCount/7)*100)}%</span>`;
+                } else if (isCurrentWeek) {
+                    statusBadge = `<span class="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded text-[10px] font-bold">ACTIVE</span>`;
+                } else {
+                    statusBadge = `<span class="text-slate-600 text-[10px] font-bold uppercase">Pending</span>`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-slate-800/80 transition-colors cursor-pointer ${currentWeekIndex === index ? 'bg-indigo-900/30 border-l-4 border-indigo-500' : 'border-l-4 border-transparent'}`;
+                tr.onclick = () => selectWeek(index);
+
+                tr.innerHTML = `
+                    <td class="p-4 flex flex-col">
+                        <span class="font-bold text-white flex items-center space-x-2">
+                            <span>Week ${w.weekNum}</span>
+                            ${isCurrentWeek ? '<span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>' : ''}
+                        </span>
+                        <span class="text-[10px] text-slate-500 font-medium">${MONTH_NAMES[w.startDateObj.getMonth()]} ${w.startDateObj.getDate()} - ${w.endDateObj.getDate()}</span>
+                    </td>
+                    <td class="p-4 text-slate-300 font-medium">${w.phase}</td>
+                    <td class="p-4 font-bold text-indigo-300 text-center">${w.miles}</td>
+                    <td class="p-4 text-slate-400 truncate max-w-[200px] hidden sm:table-cell text-[11px]">${w.focus}</td>
+                    <td class="p-4 text-right">
+                        ${statusBadge}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function resetProgress() {
+            if (confirm("Are you sure you want to reset all tracked progress? This cannot be undone.")) {
+                userProgress = {};
+                localStorage.removeItem('marathon_progress_v2');
+                renderDailyWorkouts();
+                updateStats();
+                renderRoadmap();
+            }
+        }
+
+        // ---------------------------------------------------------
+        // 4. GARMIN FIT FILE INTEGRATION
+        // ---------------------------------------------------------
+
+        function showToast(message, type = "success") {
+            const existing = document.getElementById('fit-toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'fit-toast';
+            
+            let colorClass = "bg-emerald-500 text-white";
+            if (type === "error") colorClass = "bg-rose-500 text-white";
+            if (type === "warning") colorClass = "bg-amber-400 text-amber-950";
+
+            toast.className = `fixed bottom-6 right-6 ${colorClass} px-5 py-3 rounded-xl shadow-2xl z-50 transform transition-all duration-300 translate-y-10 opacity-0 flex items-center space-x-3`;
+            
+            let iconSvg = type === "error" 
+                ? `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+                : `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+
+            toast.innerHTML = `
+                ${iconSvg}
+                <span class="font-medium text-sm">${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function handleFitUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!window.FitParser) {
+                showToast("Parser is still loading. Please wait a moment and try again.", "warning");
+                return;
+            }
+
+            showToast("Parsing FIT file...", "success");
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                
+                try {
+                    const fitParser = new window.FitParser({
+                        force: true,
+                        speedUnit: 'mph',
+                        lengthUnit: 'mi',
+                        temperatureUnit: 'celsius',
+                        elapsedRecordField: true,
+                        mode: 'list' // Flattens output so sessions are easy to access
+                    });
+
+                    fitParser.parse(arrayBuffer, function(error, data) {
+                        if (error) {
+                            console.error("FIT Parser Error:", error);
+                            showToast("Error parsing FIT file. Format may be unsupported.", "error");
+                            return;
+                        }
+                        processFitData(data);
+                    });
+                } catch (err) {
+                    console.error("FIT instantiation error:", err);
+                    showToast("Failed to initialize parser.", "error");
+                }
+            };
+            
+            reader.onerror = function() {
+                showToast("Error reading the file.", "error");
+            };
+            
+            reader.readAsArrayBuffer(file);
+            event.target.value = ''; // Reset input to allow reloading same file if needed
+        }
+
+        function processFitData(data) {
+            try {
+                // Find first valid session
+                const session = (data.sessions && data.sessions.length > 0) ? data.sessions[0] : null;
+                if (!session) {
+                    showToast("No workout session found in FIT file.", "error");
+                    return;
+                }
+
+                const distanceMi = session.total_distance || 0; 
+                let dateStr = session.start_time || session.timestamp;
+                
+                if (!dateStr) {
+                     showToast("Could not determine workout date from FIT file.", "error");
+                     return;
+                }
+                
+                const date = new Date(dateStr);
+                const avgHr = session.avg_heart_rate || 0;
+                
+                // Find matching day in trainingPlan
+                let matchedDay = null;
+                let matchedWeekIndex = -1;
+                let matchedDayIndex = -1;
+
+                for (let w = 0; w < trainingPlan.length; w++) {
+                    for (let d = 0; d < trainingPlan[w].workouts.length; d++) {
+                        let planDate = trainingPlan[w].workouts[d].dateObj;
+                        if (planDate.getFullYear() === date.getFullYear() && 
+                            planDate.getMonth() === date.getMonth() && 
+                            planDate.getDate() === date.getDate()) {
+                            matchedDay = trainingPlan[w].workouts[d];
+                            matchedWeekIndex = w;
+                            matchedDayIndex = d;
+                            break;
+                        }
+                    }
+                    if (matchedDay) break;
+                }
+
+                if (matchedDay) {
+                    const key = `w${trainingPlan[matchedWeekIndex].weekNum}_d${matchedDayIndex}`;
+                    
+                    // Mark as checked
+                    userProgress[key] = true;
+                    
+                    // Save actual performance data
+                    userProgress[`${key}_actual`] = {
+                        distance: distanceMi.toFixed(2),
+                        hr: Math.round(avgHr)
+                    };
+                    
+                    localStorage.setItem('marathon_progress_v2', JSON.stringify(userProgress));
+                    
+                    // Formulate performance feedback against the plan
+                    let planMiles = matchedDay.miles;
+                    let feedback = `Synced ${distanceMi.toFixed(2)} mi for ${matchedDay.dateStr}!`;
+                    
+                    if (planMiles > 0) {
+                         if (distanceMi < planMiles * 0.8) {
+                              feedback += " (Shorter than plan - adjust rest if needed)";
+                         } else if (distanceMi > planMiles * 1.2) {
+                              feedback += " (Longer than plan - watch for fatigue)";
+                         } else {
+                              feedback += " (Nailed the planned distance!)";
+                         }
+                    }
+
+                    // Update UI automatically to the matched week
+                    selectWeek(matchedWeekIndex);
+                    updateStats();
+                    renderRoadmap();
+                    
+                    showToast(feedback, "success");
+                } else {
+                    showToast(`Workout date (${date.toLocaleDateString()}) is outside your training plan dates.`, "warning");
+                }
+            } catch (e) {
+                console.error("Data processing error:", e);
+                showToast("Error processing parsed FIT data.", "error");
+            }
+        }
+    </script>
+</body>
+</html>
